@@ -60,8 +60,8 @@ int main()
 	read(fd2[0], concat_str, sizeof(concat_str));
 	close(fd2[0]);
 
-	strcat(concat_str, fixed_str));
-	printf("Concentrated string %s\n", concat_str);
+	strcat(concat_str, fixed_str2);
+	printf("Concatenated string %s\n", concat_str);
     } 
   
     // child process 
@@ -73,7 +73,7 @@ int main()
         // Read a string using first pipe 
         char concat_str[300]; 
         read(fd1[0], concat_str, 100);
-	close(fd1[0]); 
+	      close(fd1[0]); 
   
         // Concatenate a fixed string with it 
         int k = strlen(concat_str); 
@@ -86,17 +86,17 @@ int main()
         printf("Concatenated string %s\n", concat_str);
 
 	char input_str2[100];
-	printf("Enter a string tp concatenate:");
+	printf("Enter a string to concatenate:");
 	fflush(stdout);
 	scanf("%99s", input_str2);
 	strcat(concat_str, input_str2);
 
         // Close both reading ends 
-        write(fdr2[1], concat_str, strlen(concat_str) + 1); 
+        write(fd2[1], concat_str, strlen(concat_str) + 1); 
         close(fd2[1]); 
 
   
         exit(0); 
     } 
-	return0;
+	return 0;
 } 
