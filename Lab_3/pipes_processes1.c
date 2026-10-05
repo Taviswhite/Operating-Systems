@@ -20,12 +20,12 @@ int main()
     char input_str[100]; 
     pid_t p; 
   
-    if (pipe(fd1)==-1) 
+    if (pipe(fd1)== -1) 
     { 
         fprintf(stderr, "Pipe Failed" ); 
         return 1; 
     } 
-    if (pipe(fd2)==-1) 
+    if (pipe(fd2)== -1) 
     { 
         fprintf(stderr, "Pipe Failed" ); 
         return 1; 
