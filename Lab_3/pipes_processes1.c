@@ -31,8 +31,13 @@ int main()
         return 1; 
     } 
   
-    printf("Enter a string to concatenate:");
-    scanf("%s", input_str); 
+    printf("Other string is: %s\n", fixed_str);
+    printf("Input : ");
+    fflush(stdout);
+    if(fgets(input_str, sizeof(input_str), stdin) == NULL)
+      return 1;
+    input_str[strcspn(input_str, "\n")] = '\0';
+
     p = fork(); 
   
     if (p < 0) 
@@ -50,18 +55,30 @@ int main()
   
         // Write input string and close writing end of first 
         // pipe. 
-        write(fd1[1], input_str, strlen(input_str)+1); 
+        if(write(fd1[1], input_str, strlen(input_str)+1) == -1)
+        {
+          fprintf(stderr, "write Failed\n");
+          return 1;
+        } 
         close(fd1[1]);
+        
+        
+        char result[300];
+	      ssize_t n = read(fd2[0], result, sizeof(result) - 1);
+	      close(fd2[0]);
   
         // Wait for child to print the concatenated string 
         wait(NULL); 
 
-	char concat_str[300];
-	read(fd2[0], concat_str, sizeof(concat_str));
-	close(fd2[0]);
+        if(n <= 0)
+        {
+          fprintf(stderr, "Read Failed\n");
+          return 1;
+        }
+        result[n] = '\0';
 
-	strcat(concat_str, fixed_str2);
-	printf("Concatenated string %s\n", concat_str);
+        strncat(result, fixed_str2, sizeof(result) - strlen(result) - 1);
+	      printf("Output : %s\n", result);
     } 
   
     // child process 
@@ -72,31 +89,34 @@ int main()
       
         // Read a string using first pipe 
         char concat_str[300]; 
-        read(fd1[0], concat_str, 100);
+        ssize_t n = read(fd1[0], concat_str, 100);
 	      close(fd1[0]); 
-  
-        // Concatenate a fixed string with it 
-        int k = strlen(concat_str); 
-        int i; 
-        for (i=0; i<strlen(fixed_str); i++) 
-            concat_str[k++] = fixed_str[i]; 
-  
-        concat_str[k] = '\0';   // string ends with '\0' 
-  
-        printf("Concatenated string %s\n", concat_str);
+        if (n <= 0)
+        {
+          fprintf(stderr, "Read Failed\n");
+          exit(1);
+        }
+        concat_str[n] = '\0';
 
-	char input_str2[100];
-	printf("Enter a string to concatenate:");
-	fflush(stdout);
-	scanf("%99s", input_str2);
-	strcat(concat_str, input_str2);
+        strncat(concat_str, fixed_str, sizeof(concat_str) - strlen(concat_str) - 1);
+        printf("Output : %s\n", concat_str);
+
+        char input_str2[100];
+	      printf("Input : ");
+	      fflush(stdout);
+        if(fgets(input_str2, sizeof(input_str2), stdin) == NULL)
+            input_str2[0] = '\0';
+        input_str2[strcspn(input_str2, "\n")] = '\0';
+        strncat(concat_str, input_str2, sizeof(concat_str) - strlen(concat_str) - 1);
 
         // Close both reading ends 
-        write(fd2[1], concat_str, strlen(concat_str) + 1); 
+        if(write(fd2[1], concat_str, strlen(concat_str) + 1) == -1)
+        {
+          fprintf(stderr, "Write Failed\n");
+          exit(1);
+        } 
         close(fd2[1]); 
-
-  
-        exit(0); 
+        exit(0);
     } 
 	return 0;
 } 
